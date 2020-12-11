@@ -72,9 +72,9 @@ public class Tournament extends JavaPlugin {
         new BasicBukkitCommandGraph(new CommandModule(this.tournamentManager, this.teamManager));
     DispatcherNode node = g.getRootDispatcherNode();
     node = node.registerNode("tourney", "tournament", "tm", "events");
-    node.registerCommands(new TournamentUserCommands());
     node.registerCommands(readyCommands);
     node.registerCommands(new TournamentAdminCommands());
+    g.getRootDispatcherNode().registerCommands(new TournamentUserCommands());
 
     Bukkit.getPluginManager().registerEvents(new MatchLoadListener(this.teamManager), this);
     Bukkit.getPluginManager().registerEvents(new PlayerJoinListen(this.teamManager), this);

@@ -18,7 +18,7 @@ public class ConfigTeamParser implements TeamParser {
 
   public ConfigTeamParser() {
     this.teams =
-            ConfigTeamParser.parseTournamentTeams(
+        ConfigTeamParser.parseTournamentTeams(
             new File(Tournament.get().getDataFolder(), "teams"),
             new File(Tournament.get().getDataFolder(), "teams.yml"));
   }
