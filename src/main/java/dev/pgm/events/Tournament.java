@@ -12,6 +12,7 @@ import dev.pgm.events.ready.ReadyParties;
 import dev.pgm.events.ready.ReadySystem;
 import dev.pgm.events.team.ConfigTeamParser;
 import dev.pgm.events.team.DefaultTeamManager;
+import dev.pgm.events.team.TeamParser;
 import dev.pgm.events.team.TournamentTeamManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,17 +30,38 @@ public class Tournament extends JavaPlugin {
 
   private TournamentTeamManager teamManager;
   private TournamentManager tournamentManager;
+  private TeamParser teamParser;
 
   private static Tournament plugin;
 
+  public static Tournament get() {
+    return Tournament.plugin;
+  }
+
+  public void setTeamParser(TeamParser teamParser) {
+    this.teamParser = teamParser;
+  }
+
+  public TournamentTeamManager getTeamManager() {
+    return this.teamManager;
+  }
+
+  public TournamentManager getTournamentManager() {
+    return this.tournamentManager;
+  }
+
+  public TeamParser getTeamParser() {
+    return this.teamParser;
+  }
+
   @Override
   public void onEnable() {
-    plugin = this;
-    saveDefaultConfig();
+    Tournament.plugin = this;
+    this.saveDefaultConfig();
 
-    teamManager = DefaultTeamManager.manager();
-    tournamentManager = new TournamentManager();
-    ConfigTeamParser.getInstance(); // load teams now
+    this.teamManager = DefaultTeamManager.manager();
+    this.tournamentManager = new TournamentManager();
+    this.teamParser = new ConfigTeamParser(); // load teams now
 
     ReadySystem system = new ReadySystem();
     ReadyParties parties = new ReadyParties();
@@ -47,34 +69,22 @@ public class Tournament extends JavaPlugin {
     ReadyCommands readyCommands = new ReadyCommands(system, parties);
 
     BasicBukkitCommandGraph g =
-        new BasicBukkitCommandGraph(new CommandModule(tournamentManager, teamManager));
+        new BasicBukkitCommandGraph(new CommandModule(this.tournamentManager, this.teamManager));
     DispatcherNode node = g.getRootDispatcherNode();
     node = node.registerNode("tourney", "tournament", "tm", "events");
     node.registerCommands(new TournamentUserCommands());
     node.registerCommands(readyCommands);
     node.registerCommands(new TournamentAdminCommands());
 
-    Bukkit.getPluginManager().registerEvents(new MatchLoadListener(teamManager), this);
-    Bukkit.getPluginManager().registerEvents(new PlayerJoinListen(teamManager), this);
+    Bukkit.getPluginManager().registerEvents(new MatchLoadListener(this.teamManager), this);
+    Bukkit.getPluginManager().registerEvents(new PlayerJoinListen(this.teamManager), this);
     Bukkit.getPluginManager().registerEvents(readyListener, this);
     new CommandExecutor(this, g).register();
   }
 
   @Override
   public void onDisable() {
-    plugin = null;
-  }
-
-  public TournamentTeamManager getTeamManager() {
-    return teamManager;
-  }
-
-  public TournamentManager getTournamentManager() {
-    return tournamentManager;
-  }
-
-  public static Tournament get() {
-    return plugin;
+    Tournament.plugin = null;
   }
 
   private static class CommandModule extends AbstractModule {
@@ -87,22 +97,22 @@ public class Tournament extends JavaPlugin {
       this.teamManager = teamManager;
     }
 
-    @Override
-    protected void configure() {
-      configureInstances();
-      configureProviders();
-    }
-
     private void configureInstances() {
-      bind(PGM.class).toInstance(PGM.get());
+      this.bind(PGM.class).toInstance(PGM.get());
     }
 
     private void configureProviders() {
-      bind(MatchPlayer.class).toProvider(new MatchPlayerProvider());
-      bind(Match.class).toProvider(new MatchProvider());
-      bind(TournamentManager.class).toInstance(tournamentManager);
-      bind(TournamentTeamManager.class).toInstance(teamManager);
-      bind(TournamentFormat.class).toProvider(new TournamentProvider(tournamentManager));
+      this.bind(MatchPlayer.class).toProvider(new MatchPlayerProvider());
+      this.bind(Match.class).toProvider(new MatchProvider());
+      this.bind(TournamentManager.class).toInstance(this.tournamentManager);
+      this.bind(TournamentTeamManager.class).toInstance(this.teamManager);
+      this.bind(TournamentFormat.class).toProvider(new TournamentProvider(this.tournamentManager));
+    }
+
+    @Override
+    protected void configure() {
+      this.configureInstances();
+      this.configureProviders();
     }
   }
 }

@@ -10,15 +10,15 @@ import java.util.stream.Collectors;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-public class ConfigTeamParser {
+public class ConfigTeamParser implements TeamParser {
 
-  private List<TournamentTeam> teams;
+  private final List<TournamentTeam> teams;
 
   private static ConfigTeamParser instance;
 
-  private ConfigTeamParser() {
-    teams =
-        parseTournamentTeams(
+  public ConfigTeamParser() {
+    this.teams =
+            ConfigTeamParser.parseTournamentTeams(
             new File(Tournament.get().getDataFolder(), "teams"),
             new File(Tournament.get().getDataFolder(), "teams.yml"));
   }
@@ -71,19 +71,23 @@ public class ConfigTeamParser {
     return teamList;
   }
 
+  @Override
   public TournamentTeam getTeam(String name) {
-    for (TournamentTeam team : teams) if (team.getName().equalsIgnoreCase(name)) return team;
+    for (TournamentTeam team : this.teams) if (team.getName().equalsIgnoreCase(name)) return team;
 
     return null;
   }
 
+  @Override
   public List<TournamentTeam> getTeams() {
-    return teams;
+    return this.teams;
   }
 
+  /*
   public static ConfigTeamParser getInstance() {
     if (instance == null) instance = new ConfigTeamParser();
 
     return instance;
   }
+   */
 }
